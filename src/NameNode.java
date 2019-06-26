@@ -1,21 +1,64 @@
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileOutputStream;
-import java.io.IOException;
+import java.net.*;
+import java.io.*;
 
 public class NameNode {
+	//Server Side
+	private ServerSocket serverSocket;
+    private Socket clientSocket;
+    private PrintWriter out;
+    private BufferedReader in;
+    
+    //Client
 	static String [][] arr = new String[40][10];	//hash table with 40*10 bc maximum 39 blocks, and maximum 10 for each
 	static int fileNum = 0;//counter for file number
 	static boolean fileFound = false;
-	
 	static String temp[] = new String[] {"D10.txt","D19.txt","D39.txt"}; //test case
 	
-	public static void main(String[] args) throws IOException {
-		Append("First.txt","Hello!");
-		//printArr(arr);	
-		Read("First.txt");
-	}
 	
+	public static void main(String[] args) throws IOException {
+		//Set up server to listen
+		NameNode n = new NameNode();
+		n.start(6667);
+		
+		//Append("First.txt","Hello!");
+		//printArr(arr);	
+		//Read("First.txt");
+	 }
+	
+	
+	//SERVER SIDE
+	 public void start(int port) {
+	        try {
+				serverSocket = new ServerSocket(port);
+				clientSocket = serverSocket.accept();
+				out = new PrintWriter(clientSocket.getOutputStream(), true);
+				in = new BufferedReader(new InputStreamReader(clientSocket.getInputStream()));
+				String greeting = in.readLine();
+				    if ("hello server".equals(greeting)) {
+				        out.println("hello client");
+				    }
+				    else {
+				        out.println("unrecognised greeting");
+				    }
+			} catch (IOException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+	  }
+	 
+	    public void stop() {
+	        try {
+				in.close();
+				out.close();
+				clientSocket.close();
+				serverSocket.close();
+			} catch (IOException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+	  }
+	    
+	//CLIENT SIDE
 	public static void Append(String filename, String content) //filename ends in txt, centent is one big string
 	{	
 		arr[0][0] = filename;//store filename in the fist dimension
@@ -80,6 +123,5 @@ public class NameNode {
 		        System.out.print("\n");
 		    }
 		}
-	
 
 }
