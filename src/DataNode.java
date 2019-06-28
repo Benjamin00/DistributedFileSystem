@@ -1,6 +1,5 @@
 import java.util.LinkedList;
 import java.util.HashMap;
-import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Queue;
 import java.io.IOException;
@@ -11,6 +10,8 @@ import java.nio.file.Paths;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.locks.Lock;
+import java.util.concurrent.locks.ReentrantReadWriteLock;
 
 //TODO data node needs to listen and handle requests
 //TODO each request is handled in a separate thread
@@ -25,8 +26,6 @@ such a way that your system is deadlock free.*/
 
 /*lsof -i -n -P | grep TCP to get list of ports in use*/
 
-// This is a test comment
-
 public class DataNode {
 	ServerSocket dataServer = null;
 	
@@ -37,8 +36,11 @@ public class DataNode {
 	private Path dataDir;
 	
 	//keep shared resources safe
-	private final Object qLock = new Object();
-	private final Object uLock = new Object();
+	private final Object qLock = new Object(); //for locking available block queue
+	private final Object uLock = new Object(); //for locking the used block hashmap
+	private final ReentrantReadWriteLock rwLock = new ReentrantReadWriteLock();
+	private final Lock rLock = rwLock.readLock(); //reader side of readWriteLock
+	private final Lock wLock = rwLock.writeLock(); //writer side of readWriteLock
 	
 	public static void main(String[] args) throws InterruptedException{
 		//get port number from command line
@@ -54,7 +56,7 @@ public class DataNode {
 			d.mockRun(); //TODO replace with real run
 			
 			//break out for testing purposes
-			TimeUnit.SECONDS.sleep(5);
+			//TimeUnit.SECONDS.sleep(5);
 			break;
 		}
 
@@ -184,11 +186,17 @@ public class DataNode {
 			return null;
 		}
 		byte[] b = null;
+		
+		//get a reader lock
+		rLock.lock();
 		try {
 			b = Files.readAllBytes(p);
 		} catch (IOException e) {
 			System.out.println("Unable to read file: " + p.toString());
 			e.printStackTrace();
+		}finally {
+			//make sure we always unlock the readWriteLock
+			rLock.unlock();
 		}
 		
 		return new String(b);
@@ -206,11 +214,17 @@ public class DataNode {
 		String filename = used.get(blk_id);
 		Path p = Paths.get(filename);
 		byte[] b = contents.getBytes();
+		
+		//get a writer lock
+		wLock.lock();
 		try {
 			Files.write(p, b);
 		} catch (IOException e) {
 			System.out.println("Unable to write contents to block: " + blk_id + "(file: " + filename + ")");
 			e.printStackTrace();
+		}finally {
+			//ensure we release the readWriteLock
+			wLock.unlock();
 		}
 		return true;
 	}
