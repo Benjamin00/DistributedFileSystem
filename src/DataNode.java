@@ -23,8 +23,6 @@ such a way that your system is deadlock free.*/
 
 /*the data nodes have to serialize WRITE requests that happen to be on the same block.*/
 
-/*question: do we need a pool of allocated blocks?*/
-
 /*lsof -i -n -P | grep TCP to get list of ports in use*/
 
 public class DataNode {
@@ -34,7 +32,6 @@ public class DataNode {
 	private int MAX_BLOCKS = 10;
 	private Queue<Integer> availQ; //queue of available blocks
 	private HashMap<Integer, String> used; //map of used blocks (filename as value)
-	//private String[] files; 
 	private Path dataDir;
 	
 	//keep shared resources safe
