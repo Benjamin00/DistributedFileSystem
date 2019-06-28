@@ -103,6 +103,7 @@ public class NNHM {
 //	    	   //ask if D1 has free blocks
 //	    	   //D2...
 //	    	   //D3...
+	    		//check(String datanodeName)
 //	    	   //send blockNum & arrayList subString
 //	    	   //get back block1 from D1, NameNode pair them up and store in the hash table
 //	    	   //if gives 3 blocks back
@@ -120,7 +121,7 @@ public class NNHM {
 	    	   System.out.println("Called append within the handler");
 	    	}
 	    	
-	    	
+	    	///////////////////////////////////////////////////////////////////////////Communication test
 	    	public static void AppendToDN1(int BNum)
 	    	{
 	    		//send block number to DN1 (EX:3)
@@ -146,13 +147,14 @@ public class NNHM {
 	    	{
 	    		//send block id to DN1 (EX:1,4,5)
 
-	    		//get back content (EX: "asdfasdfasdfadfasdfasdfasdf")
+	    		//get back content (EX: "asdfasdfasdfadfasdfasdfasdf","asdfasdfasdfasdfasdf","asdfasdfasdfasdf")
+	    		
 	    	}
 	    	public static void ReadFromD2(int BNum)
 	    	{
 	    		//send block id to DN2 (EX:1,2)
 
-	    		//get back content (EX: "asdfasdfasdfadfasdfasdfasdf")
+	    		//get back content (EX: "asdfasdfasdfadfasdfasdfasdf","asdfasdfasdfasdf")
 	    	}
 	    	public static void ReadFromD3(int BNum)
 	    	{
