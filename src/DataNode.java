@@ -11,12 +11,16 @@ import java.util.concurrent.TimeUnit;
 
 //TODO data node needs to listen and handle requests
 //TODO each request is handled in a separate thread
+//TODO reader-writers problem
+
+//NOTES:
 /*Once manipulating data structures from separate threads, be careful not to end up with
 race condition. Also, you want to handle locks or other synchronization primitives in
 such a way that your system is deadlock free.*/
-//TODO reader-writers problem
 
-//lsof -i -n -P | grep TCP to get list of ports in use
+/*the data nodes have to serialize WRITE requests that happen to be on the same block.*/
+
+/*lsof -i -n -P | grep TCP to get list of ports in use*/
 
 public class DataNode {
 	ServerSocket dataServer = null;
@@ -50,8 +54,6 @@ public class DataNode {
 
 		d.stop();
 	}
-
-	
 	
 	//constructor
 	DataNode(int port){
@@ -95,7 +97,7 @@ public class DataNode {
 		}
 	}
 	
-	void run() {
+	void run() { //TODO finishe me...
 		//listen on port for message
 		Socket dataClient;
 		ObjectInputStream input;
