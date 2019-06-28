@@ -120,6 +120,49 @@ public class NNHM {
 	    	   System.out.println("Called append within the handler");
 	    	}
 	    	
+	    	
+	    	public static void AppendToDN1(int BNum)
+	    	{
+	    		//send block number to DN1 (EX:3)
+	    		
+	    		//get back Block id(EX:1,4,5)
+	    	}
+	    	
+	    	public static void AppendToDN2(int BNum)
+	    	{
+	    		//send block number to DN2 (EX:2)
+	    		
+	    		//get back Block id(EX:1,2)
+	    	}
+	    	
+	    	public static void AppendToDN3(int BNum)
+	    	{
+	    		//send block number to DN3 (EX:1)
+	    		
+	    		//get back Block id(EX:8)
+	    	}
+	    	
+	    	public static void ReadFromD1(int BNum)
+	    	{
+	    		//send block id to DN1 (EX:1,4,5)
+
+	    		//get back content (EX: "asdfasdfasdfadfasdfasdfasdf")
+	    	}
+	    	public static void ReadFromD2(int BNum)
+	    	{
+	    		//send block id to DN2 (EX:1,2)
+
+	    		//get back content (EX: "asdfasdfasdfadfasdfasdfasdf")
+	    	}
+	    	public static void ReadFromD3(int BNum)
+	    	{
+	    		//send block id to DN3 (EX:8)
+
+	    		//get back content (EX: "asdfasdfasdfadfasdfasdfasdf")
+	    	}
+	    	
+	    	
+	    	
 	    	public static void Read(String filename)
 	    	{
 //	    		List<Pair> temp = new ArrayList<Pair>();
