@@ -1,4 +1,7 @@
 import java.util.LinkedList;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Queue;
 import java.io.IOException;
 import java.io.ObjectInputStream;
@@ -20,6 +23,8 @@ such a way that your system is deadlock free.*/
 
 /*the data nodes have to serialize WRITE requests that happen to be on the same block.*/
 
+/*question: do we need a pool of allocated blocks?*/
+
 /*lsof -i -n -P | grep TCP to get list of ports in use*/
 
 public class DataNode {
@@ -27,12 +32,14 @@ public class DataNode {
 	
 	private int port; //also serves as id number
 	private int MAX_BLOCKS = 10;
-	private Queue<Integer> q; //queue of available blocks
-	private String[] files; 
+	private Queue<Integer> availQ; //queue of available blocks
+	private HashMap<Integer, String> used; //map of used blocks (filename as value)
+	//private String[] files; 
 	private Path dataDir;
 	
 	//keep shared resources safe
 	private final Object qLock = new Object();
+	private final Object uLock = new Object();
 	
 	public static void main(String[] args) throws InterruptedException{
 		//get port number from command line
@@ -60,13 +67,13 @@ public class DataNode {
 		this.port = port;
 		
 		//add available blocks to queue
-		q = new LinkedList<Integer>();
+		availQ = new LinkedList<Integer>();
 		for(int i = 0; i < MAX_BLOCKS; i++) {
-			q.add(i);
+			availQ.add(i);
 		}
 		
 		//declare files
-		files = new String[MAX_BLOCKS];
+		used = new HashMap<Integer, String>(MAX_BLOCKS);
 		
 		//create directory for storing files
 		dataDir = Paths.get("./data_" + String.valueOf(port));
@@ -97,7 +104,7 @@ public class DataNode {
 		}
 	}
 	
-	void run() { //TODO finishe me...
+	void run() { //TODO finish me...
 		//listen on port for message
 		Socket dataClient;
 		ObjectInputStream input;
@@ -132,20 +139,23 @@ public class DataNode {
 	int alloc() {
 		
 		//are there available blocks?
-		if( q.isEmpty()) {
+		if( availQ.isEmpty()) {
 			return -1;
 		}
 		
 		//get a block
 		int block = -1; //just in case someone emptied the queue between checking and synchronizing
 		synchronized(qLock) {
-			block = q.poll();
+			block = availQ.poll();
 		}
 		
 		//make a file(name)
 		if(block != -1) {
 			String filename = dataDir.toString() + "/blk_" + block + ".bin";
-			files[block] = filename;
+			//make block as used
+			synchronized(uLock) {
+				used.put(block, filename);
+			}
 			try {
 				Path p = Paths.get(filename);
 				Files.deleteIfExists(p); //this is just so that we don't have to clear directories between runs
@@ -159,16 +169,21 @@ public class DataNode {
 	}
 	
 	//2. given block id, read data and return contents
+	//returns null if invalid blk_id
 	String read(int blk_id) { //TODO could write and read at same time, make it safe
 		
 		//safety
-		if(blk_id >= MAX_BLOCKS) {
-			System.out.println("Requested block not mine: " + blk_id);
+		if(blk_id >= MAX_BLOCKS || !used.containsKey(blk_id)) {
+			System.out.println("Requested block not mine or not in use: " + blk_id);
 			return null;
 		}
 		
-		String filename = files[blk_id];
+		String filename = used.get(blk_id);
 		Path p = Paths.get(filename);
+		if(!Files.exists(p)) {
+			//files does not exist?!
+			return null;
+		}
 		byte[] b = null;
 		try {
 			b = Files.readAllBytes(p);
@@ -183,13 +198,13 @@ public class DataNode {
 	//3. write contents to block id
 	boolean write(int blk_id, String contents) { //TODO make safe for multiple writer/reader
 		//safety
-		if(blk_id >= MAX_BLOCKS) {
+		if(blk_id >= MAX_BLOCKS || !used.containsKey(blk_id)) {
 			System.out.println("Requested block not mine: " + blk_id);
 			return false;
 		}
 		
 		//write out contents in a byte array 
-		String filename = files[blk_id];
+		String filename = used.get(blk_id);
 		Path p = Paths.get(filename);
 		byte[] b = contents.getBytes();
 		try {
@@ -203,17 +218,19 @@ public class DataNode {
 	
 	//some convenient functions
 	boolean isFull() {
-		return q.isEmpty();
+		return availQ.isEmpty();
 	}
 	
 	int numEmptyBlks() {
-		return q.size();
+		return availQ.size();
 	}
 	
 	void print(){
 		System.out.println("Data Node " + port + " contents:");
-		for(int i = 0; i < files.length; i++) {
-			System.out.println("Block " + i + ": " + read(i));
+		synchronized(uLock){
+			for(Entry<Integer, String> entry: used.entrySet()) {
+				System.out.println("Block " + entry.getKey() + ": " + read(entry.getKey()));
+			}
 		}
 	}
 	
