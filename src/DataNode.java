@@ -25,6 +25,8 @@ such a way that your system is deadlock free.*/
 
 /*lsof -i -n -P | grep TCP to get list of ports in use*/
 
+// This is a test comment
+
 public class DataNode {
 	ServerSocket dataServer = null;
 	
