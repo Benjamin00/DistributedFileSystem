@@ -14,50 +14,63 @@ public class NameNode {
 	static boolean fileFound = false;
 	static String temp[] = new String[] {"D10.txt","D19.txt","D39.txt"}; //test case
 	
-	
 	public static void main(String[] args) throws IOException {
-		//Set up server to listen
-		NameNode n = new NameNode();
-		n.start(6667);
-		
-		//Append("First.txt","Hello!");
-		//printArr(arr);	
-		//Read("First.txt");
+		 NameNode server = new NameNode();
+		 server.start(5558);
 	 }
 	
+    public void start(int port) {
+        try {
+			serverSocket = new ServerSocket(port);
+			while (true)
+			    new NameNodeHandler(serverSocket.accept()).start();
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+    }
+    
+    public void stop() {
+        try {
+			serverSocket.close();
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+    }
 	
-	//SERVER SIDE
-	 public void start(int port) {
-	        try {
-				serverSocket = new ServerSocket(port);
-				clientSocket = serverSocket.accept();
-				out = new PrintWriter(clientSocket.getOutputStream(), true);
-				in = new BufferedReader(new InputStreamReader(clientSocket.getInputStream()));
-				String greeting = in.readLine();
-				    if ("hello server".equals(greeting)) {
-				        out.println("hello client");
-				    }
-				    else {
-				        out.println("unrecognised greeting");
-				    }
-			} catch (IOException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			}
-	  }
+	 private static class NameNodeHandler extends Thread {
+	        private Socket clientSocket;
+	        private PrintWriter out;
+	        private BufferedReader in;
 	 
-	    public void stop() {
-	        try {
-				in.close();
-				out.close();
-				clientSocket.close();
-				serverSocket.close();
-			} catch (IOException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			}
-	  }
-	    
+	        public NameNodeHandler(Socket socket) {
+	            this.clientSocket = socket;
+	        }
+	 
+	        public void run() {
+	            try {
+					out = new PrintWriter(clientSocket.getOutputStream(), true);
+					in = new BufferedReader(
+					  new InputStreamReader(clientSocket.getInputStream()));
+					 
+					String inputLine;
+					while ((inputLine = in.readLine()) != null) {
+					    if (".".equals(inputLine)) {
+					        out.println("bye");
+					        break;
+					    }
+					    out.println(inputLine);
+					}
+ 
+					in.close();
+					out.close();
+					clientSocket.close();
+				} catch (IOException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
+	    }
+	 }
+
 	//CLIENT SIDE
 	public static void Append(String filename, String content) //filename ends in txt, centent is one big string
 	{	

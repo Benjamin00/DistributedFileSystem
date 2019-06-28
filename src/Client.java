@@ -1,4 +1,5 @@
 import java.net.*;
+import java.util.*;
 import java.io.*;
 
 public class Client {
@@ -8,12 +9,29 @@ public class Client {
     private BufferedReader in;
     
 	public static void main(String[] args) {
-		// TODO Auto-generated method stub
-		Client client = new Client();
-	    client.startConnection("127.0.0.1", 6667);
-	    String response = client.sendMessage("hello world");
-	    System.out.println("Response: " + response);
-	    client.stopConnection();
+		//Read a user string
+		//Check that string
+		//Send that string to the NameNode
+		Client c1 = new Client();
+		c1.startConnection("127.0.0.1", 5558);
+		String msg1 = c1.sendMessage("hello");
+	    String msg2 = c1.sendMessage("world");
+	    String terminate = c1.sendMessage(".");
+	    
+	    Client c2 = new Client();
+	    c2.startConnection("127.0.0.1", 5558);
+		String msg11 = c2.sendMessage("hello");
+	    String msg21 = c2.sendMessage("world");
+	    String terminate1 = c2.sendMessage(".");
+		
+	    terminate = c2.sendMessage(".");
+	    
+	    System.out.println("First Client: " + msg1 + " " + msg2);
+	    System.out.println("Second Client: " + msg11 + " " + msg21);
+	    
+	    c1.stopConnection();
+	    c2.stopConnection();
+	    
 	}
 	
 	public void startConnection(String ip, int port) {
