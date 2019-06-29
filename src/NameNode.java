@@ -169,6 +169,7 @@ public class NameNode {
 	    	   
 	    	   
 	    	   String returnID = null; //the message giving back
+	    	   String success = null;
 	    	   List<Pair> list = new ArrayList<Pair>();
 	    	   int NumBlocksReceived = 0;
 	    	   int DNDirector = 0;
@@ -187,8 +188,9 @@ public class NameNode {
 	    			   {DNDirector++;}//-1 ,parse it to int 
 	    			   else
 	    			   {
-		    			   Pair pair = new Pair("D2",Integer.parseInt(returnID));
+		    			   Pair pair = new Pair("D1",Integer.parseInt(returnID));
 		    			   list.add(pair);
+		    			   success = ctoD1.sendMessage("Write "+returnID+ " "+ subString.get(NumBlocksReceived));
 		    			   NumBlocksReceived++;
 	    			   }
 	    		   }
@@ -199,8 +201,9 @@ public class NameNode {
 	    			   {DNDirector++;}//-1 ,parse it to int 
 	    			   else
 	    			   {
-		    			   Pair pair = new Pair("D3",Integer.parseInt(returnID));
+		    			   Pair pair = new Pair("D2",Integer.parseInt(returnID));
 		    			   list.add(pair);
+		    			   success = ctoD2.sendMessage("Write "+returnID+ " "+ subString.get(NumBlocksReceived));
 		    			   NumBlocksReceived++;
 	    			   }
 	    		   }
@@ -211,8 +214,9 @@ public class NameNode {
 	    			   {DNDirector++;}//-1 ,parse it to int 
 	    			   else
 	    			   {
-		    			   Pair pair = new Pair("D1",Integer.parseInt(returnID));
+		    			   Pair pair = new Pair("D3",Integer.parseInt(returnID));
 		    			   list.add(pair);
+		    			   success = ctoD1.sendMessage("Write "+returnID+ " "+ subString.get(NumBlocksReceived));
 		    			   NumBlocksReceived++;
 	    			   }
 	    		   }
@@ -238,17 +242,17 @@ public class NameNode {
 	    					//give back the centent of block note
 	    					if(temp.get(j).getdataNode().equals("D1"))
 	    					{
-	    						content = ctoD1.sendMessage(Integer.toString(temp.get(j).getblockNode()));
+	    						content = ctoD1.sendMessage("Read " + Integer.toString(temp.get(j).getblockNode()));
 	    						conCat.set(j,content);
 	    					}
 	    					if(temp.get(j).getdataNode().equals("D2"))
 	    					{
-	    						content = ctoD2.sendMessage(Integer.toString(temp.get(j).getblockNode()));
+	    						content = ctoD2.sendMessage("Read " + Integer.toString(temp.get(j).getblockNode()));
 	    						conCat.set(j,content);
 	    					}
 	    					if(temp.get(j).getdataNode().equals("D3"))
 	    					{
-	    						content = ctoD3.sendMessage(Integer.toString(temp.get(j).getblockNode()));
+	    						content = ctoD3.sendMessage("Read " + Integer.toString(temp.get(j).getblockNode()));
 	    						conCat.set(j,content);
 	    					}
 	    			}
