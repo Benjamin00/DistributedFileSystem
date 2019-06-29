@@ -19,7 +19,7 @@ import java.util.concurrent.locks.ReentrantReadWriteLock;
 
 //TODO data node needs to listen and handle requests
 //TODO each request is handled in a separate thread
-//TODO reader-writers problem
+//TODO make block specific write locks
 
 //NOTES:
 /*Once manipulating data structures from separate threads, be careful not to end up with
@@ -61,7 +61,10 @@ public class DataNode {
 				
 		//start server (run forever until stopped)
 		while(true) {
-			d.mockRun(); //TODO replace with real run
+			//d.mockRun(); //TODO replace with real run
+			
+			//let's run!
+			d.run();
 			
 			//break out for testing purposes
 			//TimeUnit.SECONDS.sleep(5);
@@ -119,23 +122,20 @@ public class DataNode {
 	
 	void run() { //TODO finish me...
 		//listen on port for message
-		Socket dataClient;
-		ObjectInputStream input;
 		try {
-			dataClient = dataServer.accept();
+			final Socket dataClient = dataServer.accept();
 			System.out.println("Connection established on port: " + port);
 			
-			//listen by getting InputStream and speak with OutputStream
-			input = new ObjectInputStream(dataClient.getInputStream());
+			//use data handler to handle requests
+			Thread dHandle = new DataNodeHandler(dataClient);
+			dHandle.start();
+		    
 		} catch (IOException e) {
 			System.out.println("Unable to connect with client...");
 			e.printStackTrace();
 			stop();
 			System.exit(4);
-		}
-		
-		//TODO create separate thread to parse message and act
-		
+		}		
 	}
 
 	public void stop() {
@@ -183,7 +183,7 @@ public class DataNode {
 	
 	//2. given block id, read data and return contents
 	//returns null if invalid blk_id
-	String read(int blk_id) { //TODO could write and read at same time, make it safe
+	String read(int blk_id) {
 		
 		//safety
 		if(blk_id >= MAX_BLOCKS || !used.containsKey(blk_id)) {
@@ -215,7 +215,7 @@ public class DataNode {
 	}
 	
 	//3. write contents to block id
-	boolean write(int blk_id, String contents) { //TODO make safe for multiple writer/reader
+	boolean write(int blk_id, String contents) {
 		//safety
 		if(blk_id >= MAX_BLOCKS || !used.containsKey(blk_id)) {
 			System.out.println("Requested block not mine: " + blk_id);
