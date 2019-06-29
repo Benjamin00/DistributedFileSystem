@@ -15,13 +15,11 @@ public class Central extends Client {
 
 		Client d = new Client();
 		d.startConnection("127.0.0.1", 6667);
-		String messageStr = d.sendMessage("READ D10.txt");
-		String str = d.sendMessage("APPEND D10.txt ");
+		String messageStr = d.sendMessage("READ greaterThanFourMB.txt");
+		String str = d.sendMessage("APPEND greaterThanFourMB.txt My name is");
 
 		// For the less than 4 MB 
 
-
-		
 		Client e = new Client(); 
 		e.startConnection("127.0.0.1", 6667);
 		String messageString = e.sendMessage("READ D19.txt");
