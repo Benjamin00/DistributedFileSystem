@@ -28,7 +28,7 @@ public class NameNode {
 	
 	public static void main(String[] args) {
 		//Append("First.txt","Hello!"); //Append only when it does not exist, otherwise deny it
-		NNHM server = new NNHM();
+		NameNode server = new NameNode();
 		server.start(5558);
 	}
 	
