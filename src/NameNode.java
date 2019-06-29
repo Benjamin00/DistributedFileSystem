@@ -14,6 +14,11 @@ public class NameNode {
 	static boolean fileFound = false;
 	static String temp[] = new String[] {"D10.txt","D19.txt","D39.txt"}; //test case
 	
+	// TODO: We can have a thread class.
+	// TODO: In each thread, we can have a lock.
+	// TODO: The process of accepting the requests can in itself be a thread.
+	// TODO: Each time we get a request, we can spawn a new thread immediately
+
 	public static void main(String[] args) throws IOException {
 		 NameNode server = new NameNode();
 		 server.start(5558);
