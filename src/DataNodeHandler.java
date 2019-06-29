@@ -49,7 +49,7 @@ class DataNodeHandler extends Thread {
     @Override
     public void run(){
         String command = readCommand();
-        //System.out.println("Port[" + this.clientSocket.getPort() + "] received message: " + command);
+        System.out.println("Port[" + this.clientSocket.getPort() + "] received message: " + command);
                 
         String returnMsg = "DEFAULT";
         
@@ -59,7 +59,7 @@ class DataNodeHandler extends Thread {
         switch(cmdKey.toUpperCase()) {
         case "ALLOC":
         	//call alloc
-        	int alloc_blk = myNode.alloc(); //FIXME I need access to my data node...
+        	int alloc_blk = myNode.alloc(); 
         	returnMsg = String.valueOf(alloc_blk);
         case "READ":
         	//call read
