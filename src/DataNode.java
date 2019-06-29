@@ -8,7 +8,6 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.net.ServerSocket;
 import java.net.Socket;
-import java.util.concurrent.TimeUnit;
 
 //NOTES:
 /*Once manipulating data structures from separate threads, be careful not to end up with
@@ -40,20 +39,11 @@ public class DataNode {
 		DataNode d = new DataNode(port);
 		d.start();
 
+		//run server (run forever until stopped)
+		//d.mockRun();
+		d.run();
 
-		//start server (run forever until stopped)
-		while(true) {
-			//d.mockRun();
-
-			//let's run!
-			d.run();
-
-			//break out for testing purposes
-			//TimeUnit.SECONDS.sleep(25);
-			//break;
-		}
-
-		//d.stop();
+		d.stop();
 	}
 
 	//constructor
