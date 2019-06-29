@@ -18,12 +18,15 @@ class DataNodeHandler extends Thread {
 
     private String readCommand() {
         String command = null;
+        System.out.println("I want to read a command, pls.");
         try {
             Reader reader = new InputStreamReader(clientSocket.getInputStream());
             BufferedReader br = new BufferedReader(reader);
             command = br.readLine().trim();
+            System.out.println("I've got a command!" + command);
         } catch (Exception e) {
-
+        	System.out.println("Found error while trying to read a command ");
+        	e.printStackTrace();
         }
         return command;
     }
@@ -34,7 +37,8 @@ class DataNodeHandler extends Thread {
             pw.print(out);
             pw.flush();
         } catch (Exception e) {
-
+        	System.out.println("output error! ");
+        	e.printStackTrace();
         }
     }
 
@@ -42,7 +46,8 @@ class DataNodeHandler extends Thread {
         try {
             this.clientSocket.close();
         } catch (Exception e) {
-
+        	System.out.println("close error ");
+        	e.printStackTrace();
         }
     }
 

@@ -41,7 +41,7 @@ public class DataNode {
 
 		//run server (run forever until stopped)
 		//d.mockRun();
-		d.run();
+		//d.run();
 
 		d.stop();
 	}
@@ -84,6 +84,21 @@ public class DataNode {
 			System.out.println("Running on port:" + port);
 			dataServer = new ServerSocket(port);
 
+			while (true) {
+
+				//final Socket dataClient = dataServer.accept();
+				System.out.println("Accepted Client");
+
+				//use data handler to handle requests
+				new DataNodeHandler(dataServer.accept(), this).start();
+			}
+			
+	/* public void start(int port) {
+        serverSocket = new ServerSocket(port);
+        while (true)
+            new EchoClientHandler(serverSocket.accept()).start();
+    }*/
+
 		} catch (IOException e) {
 			e.printStackTrace();
 
@@ -98,6 +113,7 @@ public class DataNode {
 			while (true) {
 
 				final Socket dataClient = dataServer.accept();
+				System.out.println("Accepted Client");
 
 				//use data handler to handle requests
 				Thread dHandle = new DataNodeHandler(dataClient, this);
