@@ -4,8 +4,10 @@ import java.util.Map.Entry;
 import java.util.Queue;
 import java.io.BufferedReader;
 import java.io.IOException;
+import java.io.InputStreamReader;
 import java.io.ObjectInputStream;
 import java.io.PrintWriter;
+import java.io.Reader;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -19,7 +21,6 @@ import java.util.concurrent.locks.ReentrantReadWriteLock;
 
 //TODO data node needs to listen and handle requests
 //TODO each request is handled in a separate thread
-//TODO make block specific write locks
 
 //NOTES:
 /*Once manipulating data structures from separate threads, be careful not to end up with
@@ -36,16 +37,13 @@ public class DataNode {
 	private int port; //also serves as id number
 	private int MAX_BLOCKS = 10;
 	private Queue<Integer> availQ; //queue of available blocks
-	private HashMap<Integer, String> used; //map of used blocks (filename as value)
+	private HashMap<Integer, Block> used; //map of used blocks (filename as value)
 	private Path dataDir;
 	
 	//keep shared resources safe
 	private final Object qLock = new Object(); //for locking available block queue
 	private final Object uLock = new Object(); //for locking the used block hashmap
-	private final ReentrantReadWriteLock rwLock = new ReentrantReadWriteLock();
-	private final Lock rLock = rwLock.readLock(); //reader side of readWriteLock
-	private final Lock wLock = rwLock.writeLock(); //writer side of readWriteLock
-
+	
     private ServerSocket serverSocket;
     private PrintWriter out;
     private BufferedReader in;
@@ -85,7 +83,7 @@ public class DataNode {
 		}
 		
 		//declare files
-		used = new HashMap<Integer, String>(MAX_BLOCKS);
+		used = new HashMap<Integer, Block>(MAX_BLOCKS);
 		
 		//create directory for storing files
 		dataDir = Paths.get("./data_" + String.valueOf(port));
@@ -167,7 +165,8 @@ public class DataNode {
 			String filename = dataDir.toString() + "/blk_" + block + ".bin";
 			//make block as used
 			synchronized(uLock) {
-				used.put(block, filename);
+				Block blk = new Block(filename);
+				used.put(block, blk);
 			}
 			try {
 				Path p = Paths.get(filename);
@@ -191,7 +190,8 @@ public class DataNode {
 			return null;
 		}
 		
-		String filename = used.get(blk_id);
+		Block blk = used.get(blk_id);
+		String filename = blk.getFilename();
 		Path p = Paths.get(filename);
 		if(!Files.exists(p)) {
 			//files does not exist?!
@@ -200,7 +200,7 @@ public class DataNode {
 		byte[] b = null;
 		
 		//get a reader lock
-		rLock.lock();
+		used.get(blk_id).getRLock().lock();
 		try {
 			b = Files.readAllBytes(p);
 		} catch (IOException e) {
@@ -208,7 +208,7 @@ public class DataNode {
 			e.printStackTrace();
 		}finally {
 			//make sure we always unlock the readWriteLock
-			rLock.unlock();
+			used.get(blk_id).getRLock().unlock();
 		}
 		
 		return new String(b);
@@ -223,12 +223,13 @@ public class DataNode {
 		}
 		
 		//write out contents in a byte array 
-		String filename = used.get(blk_id);
+		Block blk = used.get(blk_id);
+		String filename = blk.getFilename();
 		Path p = Paths.get(filename);
 		byte[] b = contents.getBytes();
 		
 		//get a writer lock
-		wLock.lock();
+		used.get(blk_id).getWLock().lock();
 		try {
 			Files.write(p, b);
 		} catch (IOException e) {
@@ -236,7 +237,7 @@ public class DataNode {
 			e.printStackTrace();
 		}finally {
 			//ensure we release the readWriteLock
-			wLock.unlock();
+			used.get(blk_id).getWLock().unlock();
 		}
 		return true;
 	}
@@ -253,7 +254,7 @@ public class DataNode {
 	void print(){
 		System.out.println("Data Node " + port + " contents:");
 		synchronized(uLock){
-			for(Entry<Integer, String> entry: used.entrySet()) {
+			for(Entry<Integer, Block> entry: used.entrySet()) {
 				System.out.println("Block " + entry.getKey() + ": " + read(entry.getKey()));
 			}
 		}
@@ -297,4 +298,73 @@ public class DataNode {
 		}
 		return port;
 	}
+	
+	/*************** DATA NODE HANDLER PROCESSES REQUESTS ON DATA NODE ***************/
+	private static class DataNodeHandler extends Thread {
+	    private Socket clientSocket;
+	   
+	    public DataNodeHandler(Socket clientSocket) {
+	        this.clientSocket  = clientSocket;
+	    }
+
+	    private String readCommand() {
+	        String command = null;
+	        try {
+	            Reader reader = new InputStreamReader(clientSocket.getInputStream());
+	            BufferedReader br = new BufferedReader(reader);
+	            command = br.readLine().trim();
+	        } catch (Exception e) {
+
+	        }
+	        return command;
+	    }
+
+	    private void output(String out) {
+	        try {
+	            PrintWriter pw = new PrintWriter(clientSocket.getOutputStream());
+	            pw.print(out);
+	            pw.flush();
+	        } catch (Exception e) {
+
+	        }
+	    }
+
+	    private void close() {
+	        try {
+	            this.clientSocket.close();
+	        } catch (Exception e) {
+
+	        }
+	    }
+
+	    @Override
+	    public void run(){
+	        String command = readCommand();
+	        System.out.println("Port[" + this.clientSocket.getPort() + "] received message: " + command);
+	                
+	        // parse the command here and do what it asks you to do
+	        String cmdParts[] = command.split(" ", 2);
+	        String cmdKey = cmdParts[0];
+	        switch(cmdKey) {
+	        case "ALLOC":
+	        	//call alloc
+	        	int block = alloc(); //FIXME I need access to my data node...
+	        case "READ":
+	        	//call read
+	        case "WRITE":
+	        	//call write
+	        default:
+	        	//Error, invalid command
+	        	//do nothing
+	        }
+
+	        String out = "your output goes here";
+
+	        // overwrite out as you wish
+
+	        output(out);
+
+	        close();
+	    }
+	}//END OF DATA NODE HANDLER CLASS
 }
