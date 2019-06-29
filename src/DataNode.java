@@ -2,8 +2,10 @@ import java.util.LinkedList;
 import java.util.HashMap;
 import java.util.Map.Entry;
 import java.util.Queue;
+import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.ObjectInputStream;
+import java.io.PrintWriter;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -12,6 +14,8 @@ import java.net.Socket;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
+
+//import NNHM.NameNodeHandler;
 
 //TODO data node needs to listen and handle requests
 //TODO each request is handled in a separate thread
@@ -41,7 +45,11 @@ public class DataNode {
 	private final ReentrantReadWriteLock rwLock = new ReentrantReadWriteLock();
 	private final Lock rLock = rwLock.readLock(); //reader side of readWriteLock
 	private final Lock wLock = rwLock.writeLock(); //writer side of readWriteLock
-	
+
+    private ServerSocket serverSocket;
+    private PrintWriter out;
+    private BufferedReader in;
+    
 	public static void main(String[] args) throws InterruptedException{
 		//get port number from command line
 		int port = parseCmdLine(args);
@@ -98,8 +106,12 @@ public class DataNode {
 		//allocate port
 		try {
 			dataServer = new ServerSocket(port);
+			while (true) {
+			    new DataNodeHandler(serverSocket.accept()).start();
+			}
 		} catch (IOException e) {
 			e.printStackTrace();
+			
 			System.err.println("Unable to allocate port: " + port);
 			System.exit(2);
 		}
