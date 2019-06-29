@@ -143,13 +143,6 @@ public class NameNode {
 						{
 							System.out.println("Command Failed.");
 						}
-					    
-					    if(inputLine.equals("Read")) {
-					    	Read("");
-					    }
-					    if(inputLine.equals("Append")) {
-					    	Append("","");
-					    }
 					    out.println(inputLine);
 					}
  
@@ -188,23 +181,41 @@ public class NameNode {
 	    		   
 	    		   if(DNDirector%3 == 0)
 	    		   {
-	    			   returnID = ctoD1.sendMessage("BlockRequest");
+	    			   returnID = ctoD1.sendMessage("Alloc");
+	    			   if(returnID.equals("-1")) 
+	    			   {DNDirector++;}//-1 ,parse it to int 
+	    			   else
+	    			   {
+		    			   Pair pair = new Pair("D2",Integer.parseInt(returnID));
+		    			   list.add(pair);
+		    			   NumBlocksReceived++;
+	    			   }
 	    		   }
-	    		   if(DNDirector%3 == 1)
+	    		   else if(DNDirector%3 == 1)
 	    		   {
-	    			   returnID = ctoD2.sendMessage("BlockRequest");
+	    			   returnID = ctoD2.sendMessage("Alloc");
+	    			   if(returnID.equals("-1")) 
+	    			   {DNDirector++;}//-1 ,parse it to int 
+	    			   else
+	    			   {
+		    			   Pair pair = new Pair("D3",Integer.parseInt(returnID));
+		    			   list.add(pair);
+		    			   NumBlocksReceived++;
+	    			   }
 	    		   }
-	    		   if(DNDirector%3 == 2)
+	    		   else if(DNDirector%3 == 2)
 	    		   {
-	    			   returnID = ctoD3.sendMessage("BlockRequest");
+	    			   returnID = ctoD3.sendMessage("Alloc");
+	    			   if(returnID.equals("-1")) 
+	    			   {DNDirector++;}//-1 ,parse it to int 
+	    			   else
+	    			   {
+		    			   Pair pair = new Pair("D1",Integer.parseInt(returnID));
+		    			   list.add(pair);
+		    			   NumBlocksReceived++;
+	    			   }
 	    		   }
-	    		   if(returnID.equals("Fail")) {DNDirector++;}
-	    		   else
-	    		   {
-	    			   Pair pair = new Pair("D1",Integer.parseInt(returnID));
-	    			   list.add(pair);
-	    			   NumBlocksReceived++;
-	    		   }   
+	    		   
 	    	   }
 	    	   map.put(filename, list);//saves in the hash table
 	    	   System.out.println("Called append within the handler");
