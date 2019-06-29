@@ -117,6 +117,7 @@ public class NameNode {
 					    if (".".equals(inputLine)) {//if a dot is sent, close everything
 					        break;
 					    }
+					    System.out.println("InputLine: " + inputLine);
 					    
 					    //Parsing the string needs to occur here 
 					    ctoD1 = new NameNodeHandlerClient();
@@ -135,8 +136,10 @@ public class NameNode {
 						}
 						else if(tokens[0].toLowerCase().equals("append") && tokens.length >= 3) {
 							file = tokens[1];
+							System.out.println("file name in NameNode: " + inputLine);
 							String[] contents = inputLine.split(" ", 3);
-							String cont = contents[3];				//gets the contents of the string including spaces
+							System.out.println("contents in NameNode: " + contents[2]);
+							String cont = contents[2];				//gets the contents of the string including spaces
 							
 							Append(file,cont);
 						}
