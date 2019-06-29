@@ -4,6 +4,7 @@ import java.io.InputStreamReader;
 import java.io.PrintWriter;
 import java.net.ServerSocket;
 import java.net.Socket;
+import java.net.UnknownHostException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -51,10 +52,52 @@ public class NNHM {
     }
 	
 	 private static class NameNodeHandler extends Thread {
+		 public class NameNodeHandlerClient {
+			    private Socket clientSocket;
+			    private PrintWriter out;
+			    private BufferedReader in;
+			    public void startConnection(String ip, int port) {
+			        try {
+						clientSocket = new Socket(ip, port);
+						out = new PrintWriter(clientSocket.getOutputStream(), true);
+						in = new BufferedReader(new InputStreamReader(clientSocket.getInputStream()));
+					} catch (UnknownHostException e) {
+						// TODO Auto-generated catch block
+						e.printStackTrace();
+					} catch (IOException e) {
+						// TODO Auto-generated catch block
+						e.printStackTrace();
+					}
+			    }
+			 
+			    public String sendMessage(String msg) {
+			        try {
+						out.println(msg);
+						String resp = in.readLine();
+						return resp;
+					} catch (IOException e) {
+						// TODO Auto-generated catch block
+						e.printStackTrace();
+					}
+			        return "";
+			    }
+			 
+			    public void stopConnection() {
+			        try {
+						in.close();
+						out.close();
+						clientSocket.close();
+					} catch (IOException e) {
+						// TODO Auto-generated catch block
+						e.printStackTrace();
+					}
+			    }
+			}
 	        private Socket clientSocket;
 	        private PrintWriter out;
 	        private BufferedReader in;
-	 
+	 	    
+	 	    // ---- START section that actually implements the name node handler -----
 	        public NameNodeHandler(Socket socket) {
 	            this.clientSocket = socket;
 	        }
@@ -67,12 +110,24 @@ public class NNHM {
 					 
 					String inputLine;
 					while ((inputLine = in.readLine()) != null) {
-					    if (".".equals(inputLine)) {
-					        out.println("bye");
+					    if (".".equals(inputLine)) {//if a dot is sent, close everything
 					        break;
 					    }
+					    
+					    
 					    //Parsing the string needs to occur here 
-				
+					    NameNodeHandlerClient ctoD1 = new NameNodeHandlerClient();
+					    ctoD1.startConnection("127.0.0.1", 65530);//DataNode 
+					    				
+					    NameNodeHandlerClient ctoD2 = new NameNodeHandlerClient();
+					    ctoD2.startConnection("127.0.0.1", 65531); //DataNode 2
+					    
+					    NameNodeHandlerClient ctoD3 = new NameNodeHandlerClient();
+					    ctoD3.startConnection("127.0.0.1", 65532); //DataNode 2
+					     
+					    
+					    String return1 = ctoD1.sendMessage("");
+					    
 					    if(inputLine.equals("Read")) {
 					    	Read("");
 					    }
@@ -90,6 +145,8 @@ public class NNHM {
 					e.printStackTrace();
 				}
 	    }
+	        
+	        //---------   The following are the "NameNode" functions -----------
 	    	public static void Append(String filename, String content) //filename ends in txt, centent is one big string
 	    	{
 //	    	   int blockNum = 0;
@@ -187,10 +244,10 @@ public class NNHM {
 //	    		}
 	    		System.out.println("Called Read within the handler");
 	    	}
-	 }
+	 }	//END NAME NODE HANDLER
 	
 	
-}
+}//END NAME NODE
 	
 	
 
