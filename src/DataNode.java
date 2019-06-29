@@ -91,6 +91,7 @@ public class DataNode {
 		//allocate port
 		try {
 
+			System.out.println("Running on port:" + port);
 			dataServer = new ServerSocket(port);
 
 		} catch (IOException e) {
@@ -107,7 +108,6 @@ public class DataNode {
 			while (true) {
 
 				final Socket dataClient = dataServer.accept();
-				System.out.println("Connection established on port: " + port);
 
 				//use data handler to handle requests
 				Thread dHandle = new DataNodeHandler(dataClient, this);
@@ -115,7 +115,7 @@ public class DataNode {
 			}
 
 		} catch (IOException e) {
-			System.out.println("Unable to connect with client...");
+			System.err.println("Unable to connect with client...");
 			e.printStackTrace();
 			stop();
 			System.exit(4);
@@ -159,7 +159,7 @@ public class DataNode {
 				Files.deleteIfExists(p); //this is just so that we don't have to clear directories between runs
 				Files.createFile(p);
 			} catch (IOException e) {
-				System.out.println("Unable to open file: " + filename + " for block: " + block);
+				System.err.println("Unable to open file: " + filename + " for block: " + block);
 				e.printStackTrace();
 			}
 		}
@@ -172,7 +172,7 @@ public class DataNode {
 
 		//safety
 		if(blk_id >= MAX_BLOCKS || !used.containsKey(blk_id)) {
-			System.out.println("Requested block not mine or not in use: " + blk_id);
+			System.err.println("Requested block not mine or not in use: " + blk_id);
 			return null;
 		}
 
@@ -190,7 +190,7 @@ public class DataNode {
 		try {
 			b = Files.readAllBytes(p);
 		} catch (IOException e) {
-			System.out.println("Unable to read file: " + p.toString());
+			System.err.println("Unable to read file: " + p.toString());
 			e.printStackTrace();
 		}finally {
 			//make sure we always unlock the readWriteLock
@@ -204,7 +204,7 @@ public class DataNode {
 	boolean write(int blk_id, String contents) {
 		//safety
 		if(blk_id >= MAX_BLOCKS || !used.containsKey(blk_id)) {
-			System.out.println("Requested block not mine: " + blk_id);
+			System.err.println("Requested block not mine: " + blk_id);
 			return false;
 		}
 
@@ -219,7 +219,7 @@ public class DataNode {
 		try {
 			Files.write(p, b);
 		} catch (IOException e) {
-			System.out.println("Unable to write contents to block: " + blk_id + "(file: " + filename + ")");
+			System.err.println("Unable to write contents to block: " + blk_id + "(file: " + filename + ")");
 			e.printStackTrace();
 		}finally {
 			//ensure we release the readWriteLock

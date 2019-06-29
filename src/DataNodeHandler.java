@@ -49,7 +49,7 @@ class DataNodeHandler extends Thread {
     @Override
     public void run(){
         String command = readCommand();
-        System.out.println("Port[" + this.clientSocket.getPort() + "] received message: " + command);
+        //System.out.println("Port[" + this.clientSocket.getPort() + "] received message: " + command);
                 
         String returnMsg = "DEFAULT";
         
