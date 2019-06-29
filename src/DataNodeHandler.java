@@ -9,9 +9,11 @@ import java.net.Socket;
 
 class DataNodeHandler extends Thread {
     private Socket clientSocket;
+    private DataNode myNode;
    
-    public DataNodeHandler(Socket clientSocket) {
+    public DataNodeHandler(Socket clientSocket, DataNode node) {
         this.clientSocket  = clientSocket;
+        this.myNode = node;
     }
 
     private String readCommand() {
@@ -49,27 +51,34 @@ class DataNodeHandler extends Thread {
         String command = readCommand();
         System.out.println("Port[" + this.clientSocket.getPort() + "] received message: " + command);
                 
+        String returnMsg = "DEFAULT";
+        
         // parse the command here and do what it asks you to do
         String cmdParts[] = command.split(" ", 2);
         String cmdKey = cmdParts[0];
-        switch(cmdKey) {
+        switch(cmdKey.toUpperCase()) {
         case "ALLOC":
         	//call alloc
-        	int block = alloc(); //FIXME I need access to my data node...
+        	int alloc_blk = myNode.alloc(); //FIXME I need access to my data node...
+        	returnMsg = String.valueOf(alloc_blk);
         case "READ":
         	//call read
+        	int read_blk = Integer.valueOf(cmdParts[1]);
+        	String contents = myNode.read(read_blk);
+        	returnMsg = contents;
         case "WRITE":
         	//call write
+        	String writeParts[] = cmdParts[1].split(" ", 2);
+        	int write_blk = Integer.valueOf(writeParts[0]);
+        	String writeData = writeParts[1];
+        	myNode.write(write_blk, writeData);
+        	returnMsg = "COMPLETE";
         default:
         	//Error, invalid command
         	//do nothing
         }
 
-        String out = "your output goes here";
-
-        // overwrite out as you wish
-
-        output(out);
+        output(returnMsg);
 
         close();
     }
