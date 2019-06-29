@@ -10,7 +10,7 @@ public class Central extends Client {
 
 		// Each of these client objects send a request
 
-		
+
 		// For greater than 4 MB
 
 		Client d = new Client();
@@ -20,6 +20,8 @@ public class Central extends Client {
 
 		// For the less than 4 MB 
 
+
+		
 		Client e = new Client(); 
 		e.startConnection("127.0.0.1", 6667);
 		String messageString = e.sendMessage("READ D19.txt");
