@@ -118,30 +118,31 @@ public class NameNode {
 					        break;
 					    }
 					    
-					    
 					    //Parsing the string needs to occur here 
 					    ctoD1 = new NameNodeHandlerClient();
 					    ctoD2 = new NameNodeHandlerClient();
 					    ctoD3 = new NameNodeHandlerClient();
-					    ctoD1.startConnection("127.0.0.1", 65530);//DataNode 
-					    ctoD2.startConnection("127.0.0.1", 65531); //DataNode 2
-					    ctoD3.startConnection("127.0.0.1", 65532); //DataNode 2
+					    
+					    ctoD1.startConnection("127.0.0.1", 65530); //Instantiate DataNode 1
+					    ctoD2.startConnection("127.0.0.1", 65531); //Instantiate DataNode 2
+					    ctoD3.startConnection("127.0.0.1", 65532); //Instantiate DataNode 3
 					     
+					    String[] tokens = inputLine.split(" ");
 					    String file;
-					    if(inputLine.substring(0, 4).equals("Read"))
-						{
-							file = inputLine.substring(5, inputLine.length());
+						if(tokens[0].toLowerCase().equals("read") && tokens.length == 2) {
+							file = tokens[1];
 							Read(file);
 						}
-						else if(inputLine.substring(0, 6).equals("Append"))
-						{
-							file = inputLine.substring(7, inputLine.indexOf(" ", 7));
-							String cont = inputLine.substring((inputLine.indexOf(" ", 7) + 1), inputLine.length());
+						else if(tokens[0].toLowerCase().equals("append") && tokens.length >= 3) {
+							file = tokens[1];
+							String[] contents = inputLine.split(" ", 3);
+							String cont = contents[3];				//gets the contents of the string including spaces
+							
 							Append(file,cont);
 						}
 						else
 						{
-							System.out.println("Command Failed.");
+							System.out.println("Failed to parse string in NameNode");
 						}
 					    out.println(inputLine);
 					}

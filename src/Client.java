@@ -21,7 +21,7 @@ public class Client {
 		while((input = sc.nextLine()) != null) {
 			
 			String[] tokens = input.split(" ");
-			if(tokens[0].toLowerCase().equals("read")) {
+			if(tokens[0].toLowerCase().equals("read") && tokens.length > 1) {
 				System.out.println("Got 'read' and the file name:" + tokens[1]);
 //				Client c = new Client();
 //				c.startConnection("127.0.0.1", 5558);
@@ -36,8 +36,8 @@ public class Client {
 //				Client c = new Client();
 //				c.startConnection("127.0.0.1", 5558);
 //				String ret = c.sendMessage(tokens[0] + " " + tokens[1] + " " + tokens[1]);	//send the read command assembly the file name.
-//				String terminate = c.sendMessage("."); 	
-			  //c.stopConnection     //close the connection
+//				String terminate = c.sendMessage("."); 			//tell the NameNode to close the connection
+			  //c.stopConnection     //close the connection on client side
 			}
 			
 			else {
