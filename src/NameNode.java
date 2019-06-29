@@ -19,6 +19,8 @@ public class NameNode {
 	// TODO: The process of accepting the requests can in itself be a thread.
 	// TODO: Each time we get a request, we can spawn a new thread immediately
 
+	/*(new Thread(new exampleThread())).start();*/
+
 	public static void main(String[] args) throws IOException {
 		 NameNode server = new NameNode();
 		 server.start(5558);
@@ -143,3 +145,20 @@ public class NameNode {
 		}
 
 }
+
+/*
+class exampleThread extends Thread implements Runnable 
+{
+	// Lock
+
+	// Recieves Request
+		// Spawns a new thread while the previous request is still being catered to.
+		// We could have something like a while loop here 
+		// In this loop, we could also implement a lock
+		// This is just an idea
+
+
+
+	// Unlock
+}
+*/
