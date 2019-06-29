@@ -10,7 +10,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-public class NNHM {
+public class NameNode {
 	final static int MB = 4194304;//String cut in 4MB
 	//hashmap that stores the filename and DNum+BNum
 	static Map<String, List<Pair>> map=new HashMap<String, List<Pair>>(); 
