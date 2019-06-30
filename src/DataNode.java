@@ -36,8 +36,8 @@ public class DataNode {
 
 		//Set up server to listen indefinitely
 		DataNode d = new DataNode(port);
-		//d.start();
-		d.mockRun();
+		d.start();
+		//d.mockRun(); //uncomment to test data node as stand-alone
 
 		//TODO how do we signal to data node it's time to stop?
 		d.stop();
