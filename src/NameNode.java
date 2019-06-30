@@ -15,7 +15,6 @@ public class NameNode {
 	//hashmap that stores the filename and DNum+BNum
 	static Map<String, List<Pair>> map=new HashMap<String, List<Pair>>(); 
 	//ArrayList that contain all the substring of contents
-	static List<String> conCat = new ArrayList<String>(); //concatenate strings
 
 	private ServerSocket serverSocket;
 	private Socket clientSocket;
@@ -158,7 +157,7 @@ public class NameNode {
 
 		//---------   The following are the "NameNode" functions -----------
 		public static void Append(String filename, String content) //filename ends in txt, centent is one big string
-		{
+		{	
 			int blockNum = 0;
 			List<String> subString = new ArrayList<String>(); //break down strings
 			System.out.println("Content: " + content);
@@ -198,6 +197,8 @@ public class NameNode {
 				//EX: 5 blockNum, request to DN1,DN2,DN3,DN1,DN2
 				//if a freeblock is given back, set gotit to true
 				System.out.println("DNDirector="+DNDirector);
+				
+				
 				if(DNDirector%3 == 0)
 				{
 					ctoD.startConnection("127.0.0.1", 65530); //Instantiate DataNode 1
@@ -263,7 +264,16 @@ public class NameNode {
 				}
 
 			}
+			if(map.containsKey(filename)){
+				map.get(filename).addAll(list);
+			}
+			else {
 			map.put(filename, list);//saves in the hash table
+			}
+			List<Pair> test = map.get(filename);
+			for(int i = 0; i < test.size(); i++) {
+				System.out.println("DataNode: " + test.get(i).getdataNode() + " block:" + test.get(i).getblockNode());
+			}
 			System.out.println("Called append within the handler");
 		}
 
@@ -272,6 +282,8 @@ public class NameNode {
 		{
 			String content = null;
 			List<Pair> temp = new ArrayList<Pair>();
+			List<String> conCat = new ArrayList<String>(); //concatenate strings
+
 			if(map.containsKey(filename))//if the file is found
 			{
 				temp = map.get(filename);	
@@ -286,25 +298,26 @@ public class NameNode {
 						ctoD.startConnection("127.0.0.1", 65530);
 						content = ctoD.sendMessage("Read " + Integer.toString(temp.get(j).getblockNode()));
 						ctoD.stopConnection();
-						conCat.set(j,content);
+						conCat.add(j,content);
 					}
 					if(temp.get(j).getdataNode().equals("D2"))
 					{
 						ctoD.startConnection("127.0.0.1", 65531);
 						content = ctoD.sendMessage("Read " + Integer.toString(temp.get(j).getblockNode()));
 						ctoD.stopConnection();
-						conCat.set(j,content);
+						conCat.add(j,content);
 					}
 					if(temp.get(j).getdataNode().equals("D3"))
 					{
 						ctoD.startConnection("127.0.0.1", 65532);
 						content = ctoD.sendMessage("Read " + Integer.toString(temp.get(j).getblockNode()));
 						ctoD.stopConnection();
-						conCat.set(j,content);
+						conCat.add(j,content);
 					}
 				}
 				String joined = String.join(" ", conCat); //conCat is a string list
 				//joined is send back to client
+				System.out.println("Output: " + joined);
 				output(joined);
 
 			}else{System.out.println("The file does not exist.");
@@ -314,8 +327,10 @@ public class NameNode {
 		private static void output(String out) {
 			try {
 				PrintWriter pw = new PrintWriter(clientSocket.getOutputStream());
+				pw.flush();
 				pw.print(out);
 				pw.flush();
+				pw.close();
 			} catch (Exception e) {
 
 			}

@@ -26,6 +26,7 @@ public class Client {
 				Client c = new Client();
 				c.startConnection("127.0.0.1", 5558);
 				String ret = c.sendMessage(tokens[0] + " " + tokens[1]);	//send the read command assembly the file name.
+				System.out.println(ret);
 				String terminate = c.sendMessage("."); 						
 				c.stopConnection();//close the connection
 			}
