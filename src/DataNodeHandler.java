@@ -10,6 +10,8 @@ import java.net.Socket;
 class DataNodeHandler extends Thread {
 	private Socket clientSocket;
 	private DataNode myNode;
+	private BufferedReader br;
+	PrintWriter pw;
 
 	public DataNodeHandler(Socket clientSocket, DataNode node) {
 		this.clientSocket  = clientSocket;
@@ -20,8 +22,8 @@ class DataNodeHandler extends Thread {
 		String command = null;
 		System.out.println("I want to read a command, pls.");
 		try {
-			Reader reader = new InputStreamReader(clientSocket.getInputStream());
-			BufferedReader br = new BufferedReader(reader);
+			//Reader reader = new InputStreamReader(clientSocket.getInputStream());
+			br = new BufferedReader(new InputStreamReader(clientSocket.getInputStream()));
 			command = br.readLine().trim();
 			System.out.println("I've got a command!" + command);
 		} catch (Exception e) {
@@ -34,7 +36,7 @@ class DataNodeHandler extends Thread {
 	private void output(String out) {
 		try {
 			System.out.println("Inside output: " + out);
-			PrintWriter pw = new PrintWriter(clientSocket.getOutputStream());
+			pw = new PrintWriter(clientSocket.getOutputStream());
 			pw.print(out);
 			pw.flush();
 		} catch (Exception e) {
@@ -46,6 +48,8 @@ class DataNodeHandler extends Thread {
 	private void close() {
 		try {
 			this.clientSocket.close();
+			br.close();
+			pw.close();
 		} catch (Exception e) {
 			System.out.println("close error ");
 			e.printStackTrace();
@@ -92,7 +96,6 @@ class DataNodeHandler extends Thread {
 			break;
 		}
 
-		System.out.println("About to call output:" + returnMsg);
 		output(returnMsg);
 
 		close();

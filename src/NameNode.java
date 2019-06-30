@@ -216,7 +216,7 @@ public class NameNode {
 						System.out.println("DataNode is : "+ pair.getdataNode());
 						System.out.println("BlockID is : "+ pair.getblockNode());
 
-						success = ctoD1.sendMessage("Write "+returnID+ " "+ subString.get(NumBlocksReceived));
+						success = ctoD1.sendMessage(msg);
 						NumBlocksReceived++;
 					}
 				}

@@ -10,6 +10,8 @@ public class StartDataNodes {
 		startNode(65530, "D0.log");
 		startNode(65531, "D1.log");
 		startNode(65532, "D2.log");
+		
+		System.out.println("All data nodes are running...");
 	}
 	
 	public static void startNode(int port, String logFile) throws IOException {
