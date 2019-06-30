@@ -49,22 +49,19 @@ public class NameNode {
 		}
 	}
 
-	private static class NameNodeHandler extends Thread {
-		static NameNodeHandlerClient ctoD;
+	private static class NameNodeHandler extends Thread { //Name Node Handler is created on every request from the client. 
+		static NameNodeHandlerClient ctoD;					//.. and closed once request is completed
 		public class NameNodeHandlerClient {
 			private Socket clientSocket;
 			private PrintWriter out;
 			private BufferedReader in;
+			
 			public void startConnection(String ip, int port) {
 				try {
 					clientSocket = new Socket(ip, port);
 					out = new PrintWriter(clientSocket.getOutputStream(), true);
 					in = new BufferedReader(new InputStreamReader(clientSocket.getInputStream()));
-				} catch (UnknownHostException e) {
-					// TODO Auto-generated catch block
-					e.printStackTrace();
-				} catch (IOException e) {
-					// TODO Auto-generated catch block
+				} catch (Exception e) {
 					e.printStackTrace();
 				}
 			}
@@ -75,7 +72,6 @@ public class NameNode {
 					String resp = in.readLine();
 					return resp;
 				} catch (IOException e) {
-					// TODO Auto-generated catch block
 					e.printStackTrace();
 				}
 				return "";
@@ -97,7 +93,7 @@ public class NameNode {
 		private BufferedReader in;
 
 
-		// ---- START section that actually implements the name node handler -----
+		// ---- START section that actually implements the name node handler ----- //
 		public NameNodeHandler(Socket socket) {
 			this.clientSocket = socket;
 		}
@@ -109,25 +105,19 @@ public class NameNode {
 						new InputStreamReader(clientSocket.getInputStream()));
 
 				String inputLine;
-				while ((inputLine = in.readLine()) != null) {
-					if (".".equals(inputLine)) {//if a dot is sent, close everything
+				while ((inputLine = in.readLine()) != null) {//BEGIN while loop
+					if (".".equals(inputLine)) {		//if a dot is sent, close everything
 						break;
 					}
 					System.out.println("InputLine: " + inputLine);
-
-					//Parsing the string needs to occur here 
-					ctoD = new NameNodeHandlerClient();
-//					ctoD2 = new NameNodeHandlerClient();
-//					ctoD3 = new NameNodeHandlerClient();
-
-//					ctoD.startConnection("127.0.0.1", 65530); //Instantiate DataNode 1
-//					ctoD2.startConnection("127.0.0.1", 65531); //Instantiate DataNode 2
-//					ctoD3.startConnection("127.0.0.1", 65532); //Instantiate DataNode 3
-
+					ctoD = new NameNodeHandlerClient();	//Create the client that will be used repeatedly to communicate with datanodes 
+					
+					//---Parse String, Call Read or Append --//
 					String[] tokens = inputLine.split(" ");
 					String file;
 					if(tokens[0].toLowerCase().equals("read") && tokens.length == 2) {
 						file = tokens[1];
+						
 						Read(file);
 					}
 					else if(tokens[0].toLowerCase().equals("append") && tokens.length >= 3) {
@@ -144,19 +134,18 @@ public class NameNode {
 						System.out.println("Failed to parse string in NameNode");
 					}
 					out.println(inputLine);
-				}
+				}//END while loop, close connection
 
 				in.close();
 				out.close();
 				clientSocket.close();
 			} catch (IOException e) {
-				// TODO Auto-generated catch block
 				e.printStackTrace();
 			}
 		}
 
-		//---------   The following are the "NameNode" functions -----------
-		public static void Append(String filename, String content) //filename ends in txt, centent is one big string
+		//---------   The following are the "NameNode" functions ----------- //
+		public static void Append(String filename, String content) //filename ends in txt, content is one big string
 		{	
 			int blockNum = 0;
 			List<String> subString = new ArrayList<String>(); //break down strings
