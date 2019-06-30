@@ -7,7 +7,6 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.net.ServerSocket;
-import java.net.Socket;
 
 //NOTES:
 /*Once manipulating data structures from separate threads, be careful not to end up with
@@ -41,7 +40,7 @@ public class DataNode {
 		d.mockRun();
 
 		//TODO how do we signal to data node it's time to stop?
-		//d.stop();
+		d.stop();
 	}
 
 	//constructor
@@ -214,6 +213,8 @@ public class DataNode {
 
 	void print(){
 		System.out.println("Data Node " + port + " contents:");
+		
+		//don't allow any modifications while we're printing contents
 		synchronized(uLock){
 			for(Entry<Integer, Block> entry: used.entrySet()) {
 				System.out.println("Block " + entry.getKey() + ": " + read(entry.getKey()));
