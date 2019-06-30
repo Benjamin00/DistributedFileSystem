@@ -21,7 +21,7 @@ public class DataNode {
 	ServerSocket dataServer = null;
 
 	private int port; //also serves as id number
-	private int MAX_BLOCKS = 10;
+	private int MAX_BLOCKS = 100;
 	private Queue<Integer> availQ; //queue of available blocks
 	private HashMap<Integer, Block> used; //map of used blocks (filename as value)
 	private Path dataDir;
