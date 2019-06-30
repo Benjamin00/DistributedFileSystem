@@ -32,18 +32,16 @@ public class DataNode {
 	private final Object uLock = new Object(); //for locking the used block hashmap
 
 	public static void main(String[] args) throws InterruptedException{
-		//get port number from command line
+		//get port number from command line; expected to be first argument
 		int port = parseCmdLine(args);
 
-		//Set up server to listen
+		//Set up server to listen indefinitely
 		DataNode d = new DataNode(port);
-		d.start();
+		//d.start();
+		d.mockRun();
 
-		//run server (run forever until stopped)
-		//d.mockRun();
-		//d.run();
-
-		d.stop();
+		//TODO how do we signal to data node it's time to stop?
+		//d.stop();
 	}
 
 	//constructor
@@ -92,12 +90,6 @@ public class DataNode {
 				//use data handler to handle requests
 				new DataNodeHandler(dataServer.accept(), this).start();
 			}
-			
-	/* public void start(int port) {
-        serverSocket = new ServerSocket(port);
-        while (true)
-            new EchoClientHandler(serverSocket.accept()).start();
-    }*/
 
 		} catch (IOException e) {
 			e.printStackTrace();
@@ -105,27 +97,6 @@ public class DataNode {
 			System.err.println("Unable to allocate port: " + port);
 			System.exit(2);
 		}
-	}
-
-	void run() { 
-		//listen on port for message
-		try {
-			while (true) {
-
-				final Socket dataClient = dataServer.accept();
-				System.out.println("Accepted Client");
-
-				//use data handler to handle requests
-				Thread dHandle = new DataNodeHandler(dataClient, this);
-				dHandle.start();
-			}
-
-		} catch (IOException e) {
-			System.err.println("Unable to connect with client...");
-			e.printStackTrace();
-			stop();
-			System.exit(4);
-		}		
 	}
 
 	public void stop() {
@@ -141,14 +112,12 @@ public class DataNode {
 	//1. alloc returns the block number allocated, -1 if none available
 	int alloc() {
 
-		//are there available blocks?
-		if( availQ.isEmpty()) {
-			return -1;
-		}
-
 		//get a block
-		int block = -1; //just in case someone emptied the queue between checking and synchronizing
+		int block = -1; //return -1 if no blocks available
 		synchronized(qLock) {
+			if( availQ.isEmpty()) {
+				return block;
+			}
 			block = availQ.poll();
 		}
 
@@ -157,8 +126,8 @@ public class DataNode {
 			String filename = dataDir.toString() + "/blk_" + block + ".bin";
 			//make block as used
 			synchronized(uLock) {
-				Block blk = new Block(filename);
-				used.put(block, blk);
+				Block blkObj = new Block(filename);
+				used.put(block, blkObj);
 			}
 			try {
 				Path p = Paths.get(filename);
@@ -189,12 +158,12 @@ public class DataNode {
 			//files does not exist?!
 			return null;
 		}
-		byte[] b = null;
+		byte[] bData = null;
 
-		//get a reader lock
+		//get a reader lock (specific to this block)
 		used.get(blk_id).getRLock().lock();
 		try {
-			b = Files.readAllBytes(p);
+			bData = Files.readAllBytes(p);
 		} catch (IOException e) {
 			System.err.println("Unable to read file: " + p.toString());
 			e.printStackTrace();
@@ -203,7 +172,7 @@ public class DataNode {
 			used.get(blk_id).getRLock().unlock();
 		}
 
-		return new String(b);
+		return new String(bData); //convert bytes to string
 	}
 
 	//3. write contents to block id
@@ -218,12 +187,12 @@ public class DataNode {
 		Block blk = used.get(blk_id);
 		String filename = blk.getFilename();
 		Path p = Paths.get(filename);
-		byte[] b = contents.getBytes();
+		byte[] bData = contents.getBytes();
 
-		//get a writer lock
+		//get a writer lock (unique to this block)
 		used.get(blk_id).getWLock().lock();
 		try {
-			Files.write(p, b);
+			Files.write(p, bData);
 		} catch (IOException e) {
 			System.err.println("Unable to write contents to block: " + blk_id + "(file: " + filename + ")");
 			e.printStackTrace();
@@ -234,7 +203,7 @@ public class DataNode {
 		return true;
 	}
 
-	//some convenient functions
+	//some convenient functions ... for testing
 	boolean isFull() {
 		return availQ.isEmpty();
 	}
@@ -252,7 +221,7 @@ public class DataNode {
 		}
 	}
 
-	void mockRun() {
+	void mockRun() { //test function
 
 		//add some data
 		for(int i = 0; i < 11; i++) {
@@ -273,6 +242,7 @@ public class DataNode {
 
 	}
 
+	//given the command line arguments, find and return port number
 	private static int parseCmdLine(String[] args) {
 		int port = 0;
 
