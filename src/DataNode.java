@@ -21,7 +21,7 @@ public class DataNode {
 	ServerSocket dataServer = null;
 
 	private int port; //also serves as id number
-	private int MAX_BLOCKS = 100;
+	private int MAX_BLOCKS = 10;
 	private Queue<Integer> availQ; //queue of available blocks
 	private HashMap<Integer, Block> used; //map of used blocks (filename as value)
 	private Path dataDir;
@@ -123,6 +123,7 @@ public class DataNode {
 		//make a file(name)
 		if(block != -1) {
 			String filename = dataDir.toString() + "/blk_" + block + ".bin";
+			System.out.println("Allocating: " + filename);
 			//make block as used
 			synchronized(uLock) {
 				Block blkObj = new Block(filename);
