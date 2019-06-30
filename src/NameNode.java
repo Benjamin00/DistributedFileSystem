@@ -51,9 +51,7 @@ public class NameNode {
 	}
 
 	private static class NameNodeHandler extends Thread {
-		static NameNodeHandlerClient ctoD1;
-		static NameNodeHandlerClient ctoD2;
-		static NameNodeHandlerClient ctoD3;
+		static NameNodeHandlerClient ctoD;
 		public class NameNodeHandlerClient {
 			private Socket clientSocket;
 			private PrintWriter out;
@@ -119,13 +117,13 @@ public class NameNode {
 					System.out.println("InputLine: " + inputLine);
 
 					//Parsing the string needs to occur here 
-					ctoD1 = new NameNodeHandlerClient();
-					ctoD2 = new NameNodeHandlerClient();
-					ctoD3 = new NameNodeHandlerClient();
+					ctoD = new NameNodeHandlerClient();
+//					ctoD2 = new NameNodeHandlerClient();
+//					ctoD3 = new NameNodeHandlerClient();
 
-					ctoD1.startConnection("127.0.0.1", 65530); //Instantiate DataNode 1
-					ctoD2.startConnection("127.0.0.1", 65531); //Instantiate DataNode 2
-					ctoD3.startConnection("127.0.0.1", 65532); //Instantiate DataNode 3
+//					ctoD.startConnection("127.0.0.1", 65530); //Instantiate DataNode 1
+//					ctoD2.startConnection("127.0.0.1", 65531); //Instantiate DataNode 2
+//					ctoD3.startConnection("127.0.0.1", 65532); //Instantiate DataNode 3
 
 					String[] tokens = inputLine.split(" ");
 					String file;
@@ -202,7 +200,9 @@ public class NameNode {
 				System.out.println("DNDirector="+DNDirector);
 				if(DNDirector%3 == 0)
 				{
-					returnID = ctoD1.sendMessage("Alloc");
+					ctoD.startConnection("127.0.0.1", 65530); //Instantiate DataNode 1
+					returnID = ctoD.sendMessage("Alloc");
+					ctoD.stopConnection();
 					System.out.println("Received: " + returnID);
 					System.out.println("Sent message Alloc to 1");
 					if(returnID.equals("-1")) 
@@ -215,14 +215,17 @@ public class NameNode {
 						System.out.println("Msg: " + msg);
 						System.out.println("DataNode is : "+ pair.getdataNode());
 						System.out.println("BlockID is : "+ pair.getblockNode());
-
-						success = ctoD1.sendMessage(msg);
+						ctoD.startConnection("127.0.0.1", 65530);
+						success = ctoD.sendMessage(msg);
+						ctoD.stopConnection();
 						NumBlocksReceived++;
 					}
 				}
 				else if(DNDirector%3 == 1)
 				{
-					returnID = ctoD2.sendMessage("Alloc");
+					ctoD.startConnection("127.0.0.1", 65531);
+					returnID = ctoD.sendMessage("Alloc");
+					ctoD.stopConnection();
 					System.out.println("Received: " + returnID);
 
 					System.out.println("Sent message Alloc to 2");
@@ -232,13 +235,17 @@ public class NameNode {
 					{
 						Pair pair = new Pair("D2",Integer.parseInt(returnID));
 						list.add(pair);
-						success = ctoD2.sendMessage("Write "+returnID+ " "+ subString.get(NumBlocksReceived));
+						ctoD.startConnection("127.0.0.1", 65531);
+						success = ctoD.sendMessage("Write "+returnID+ " "+ subString.get(NumBlocksReceived));
+						ctoD.stopConnection();
 						NumBlocksReceived++;
 					}
 				}
 				else if(DNDirector%3 == 2)
 				{
-					returnID = ctoD3.sendMessage("Alloc");
+					ctoD.startConnection("127.0.0.1", 65532);
+					returnID = ctoD.sendMessage("Alloc");
+					ctoD.stopConnection();
 					System.out.println("Received: " + returnID);
 
 					System.out.println("Sent message Alloc to 3");
@@ -248,7 +255,9 @@ public class NameNode {
 					{
 						Pair pair = new Pair("D3",Integer.parseInt(returnID));
 						list.add(pair);
-						success = ctoD1.sendMessage("Write "+returnID+ " "+ subString.get(NumBlocksReceived));
+						ctoD.startConnection("127.0.0.1", 65532);
+						success = ctoD.sendMessage("Write "+returnID+ " "+ subString.get(NumBlocksReceived));
+						ctoD.stopConnection();
 						NumBlocksReceived++;
 					}
 				}
@@ -274,17 +283,23 @@ public class NameNode {
 					//give back the centent of block note
 					if(temp.get(j).getdataNode().equals("D1"))
 					{
-						content = ctoD1.sendMessage("Read " + Integer.toString(temp.get(j).getblockNode()));
+						ctoD.startConnection("127.0.0.1", 65530);
+						content = ctoD.sendMessage("Read " + Integer.toString(temp.get(j).getblockNode()));
+						ctoD.stopConnection();
 						conCat.set(j,content);
 					}
 					if(temp.get(j).getdataNode().equals("D2"))
 					{
-						content = ctoD2.sendMessage("Read " + Integer.toString(temp.get(j).getblockNode()));
+						ctoD.startConnection("127.0.0.1", 65531);
+						content = ctoD.sendMessage("Read " + Integer.toString(temp.get(j).getblockNode()));
+						ctoD.stopConnection();
 						conCat.set(j,content);
 					}
 					if(temp.get(j).getdataNode().equals("D3"))
 					{
-						content = ctoD3.sendMessage("Read " + Integer.toString(temp.get(j).getblockNode()));
+						ctoD.startConnection("127.0.0.1", 65532);
+						content = ctoD.sendMessage("Read " + Integer.toString(temp.get(j).getblockNode()));
+						ctoD.stopConnection();
 						conCat.set(j,content);
 					}
 				}
