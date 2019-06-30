@@ -3,6 +3,9 @@ if you haven't done something, explain why
 
 code: clean up if you can
 
+Not Done:
+	- didn't add signal handling for shutdown, reason=time
+
 
 Testing:
 1. Start 3 data nodes on known parts, each as its own process
