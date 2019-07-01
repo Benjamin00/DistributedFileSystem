@@ -14,18 +14,14 @@ public class NameNode {
 	final static int MB = 4194304;//String cut in 4MB
 	//hashmap that stores the filename and DNum+BNum
 	static Map<String, List<Pair>> map=new HashMap<String, List<Pair>>(); 
-	//ArrayList that contain all the substring of contents
 
 	private ServerSocket serverSocket;
 	private Socket clientSocket;
 	private PrintWriter out;
 	private BufferedReader in;
-	//mutex
-	//private final Object mutex = new Object();
 
 
 	public static void main(String[] args) {
-		//Append("First.txt","Hello!"); //Append only when it does not exist, otherwise deny it
 		NameNode server = new NameNode();
 		server.start(5558);
 	}
@@ -147,56 +143,48 @@ public class NameNode {
 		//---------   The following are the "NameNode" functions ----------- //
 		public static void Append(String filename, String content) //filename ends in txt, content is one big string
 		{	
-			int blockNum = 0;
-			List<String> subString = new ArrayList<String>(); //break down strings
-			System.out.println("Content: " + content);
-			if(content.length()*2>MB) {
+			int blockNum = 0;//Number of blocks needed
+			List<String> subString = new ArrayList<String>(); //break down strings and store in List of String 
+			if(content.length()*2>MB) {//if the length of content(length*2) is greater then 4MB
 				blockNum = MB/content.length()+1; 
 			}
 			else {
 				blockNum = 1;
 			}
-			System.out.println("First BlockNum: " + blockNum);
 
-			for(int i = 0; i < blockNum; i++)//cut string by by
+			for(int i = 0; i < blockNum; i++)//cut string by 4MB and add to the string list
 			{
 				int idx1 = i*MB;
 				int idx2 = (i+1)*MB;
 				if(idx2 > content.length()) {
 					idx2 = content.length();
-				}
-				System.out.println("idx1=" + idx1 + " idx2=" + idx2);
-				
+				}				
 				subString.add(content.substring(idx1, idx2));
-				System.out.println("Substring in Append: " + subString.get(i));
 			}
 
 
-			String returnID = null; //the message giving back
-			String success = null;
-			List<Pair> list = new ArrayList<Pair>();
-			int NumBlocksReceived = 0;
-			int DNDirector = 0;
+			String returnID = null;//BlockID, given from DataNode when send Alloc
+			String success = null;//Given from DateNode when send Write + BlockID + content
+			List<Pair> list = new ArrayList<Pair>();//add blockID into pair for hashmap
+			int NumBlocksReceived = 0;//number of blocks alloc
+			int DNDirector = 0;//DataNodeDirector, a Round Robin algorithm to select which DataNode to talk to
 			System.out.println("BlockNum: " + blockNum);
 			while(NumBlocksReceived < blockNum)
 			{
 				///////////////////////////////////////////////////////////////////////////////////////////////////////////////
 				//reqest send to DN1, DN2, DN3
 				//talk to DNDirect%3(th) DataNode
-				//EX: 5 blockNum, request to DN1,DN2,DN3,DN1,DN2
-				//if a freeblock is given back, set gotit to true
-				System.out.println("DNDirector="+DNDirector);
-				
+				//EX: 5 blockNum, request to DN1,DN2,DN3,DN1,DN2				
 				
 				if(DNDirector%3 == 0)
 				{
 					ctoD.startConnection("127.0.0.1", 65530); //Instantiate DataNode 1
-					returnID = ctoD.sendMessage("Alloc");
+					returnID = ctoD.sendMessage("Alloc");//sending message
 					ctoD.stopConnection();
 					System.out.println("Received: " + returnID);
 					System.out.println("Sent message Alloc to 1");
-					if(returnID.equals("-1")) 
-					{DNDirector++;}//-1 ,parse it to int 
+					//if the request is denied(sending back "-1"), move to next datanode
+					if(returnID.equals("-1")){DNDirector++;}
 					else
 					{
 						Pair pair = new Pair("D1",Integer.parseInt(returnID));
@@ -219,8 +207,7 @@ public class NameNode {
 					System.out.println("Received: " + returnID);
 
 					System.out.println("Sent message Alloc to 2");
-					if(returnID.equals("-1")) 
-					{DNDirector++;}//-1 ,parse it to int 
+					if(returnID.equals("-1")) {DNDirector++;}
 					else
 					{
 						Pair pair = new Pair("D2",Integer.parseInt(returnID));
@@ -239,8 +226,7 @@ public class NameNode {
 					System.out.println("Received: " + returnID);
 
 					System.out.println("Sent message Alloc to 3");
-					if(returnID.equals("-1")) 
-					{DNDirector++;}//-1 ,parse it to int 
+					if(returnID.equals("-1")) {DNDirector++;}
 					else
 					{
 						Pair pair = new Pair("D3",Integer.parseInt(returnID));
@@ -269,16 +255,15 @@ public class NameNode {
 
 		public static void Read(String filename)
 		{
-			String content = null;
-			List<Pair> temp = new ArrayList<Pair>();
+			String content = null;//variable giving back from block
+			List<Pair> temp = new ArrayList<Pair>();//get the list of DN and blockID from the table
 			List<String> conCat = new ArrayList<String>(); //concatenate strings
 
 			if(map.containsKey(filename))//if the file is found
 			{
 				temp = map.get(filename);	
-				for(int j = 0; j < temp.size(); j++)//add mutex to this???
+				for(int j = 0; j < temp.size(); j++)
 				{
-					//File infile =new File(arr[index][j]);
 					temp.get(j).getdataNode();
 					//send a message to the specific data node
 					//give back the centent of block note
