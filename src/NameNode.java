@@ -14,6 +14,8 @@ public class NameNode {
 	final static int MB = 4194304;//String cut in 4MB
 	//hashmap that stores the filename and DNum+BNum
 	static Map<String, List<Pair>> map=new HashMap<String, List<Pair>>(); 
+	//keep shared resources safe
+	final static Object mapLock = new Object(); //for locking hashmap
 
 	private ServerSocket serverSocket;
 	private Socket clientSocket;
@@ -239,11 +241,15 @@ public class NameNode {
 				}
 
 			}
-			if(map.containsKey(filename)){
-				map.get(filename).addAll(list);
-			}
-			else {
-			map.put(filename, list);//saves in the hash table
+			
+			//ensure only one thread edits hashmap at a time
+			synchronized(mapLock) {
+				if(map.containsKey(filename)){
+					map.get(filename).addAll(list);
+				}
+				else {
+					map.put(filename, list);//saves in the hash table
+				}
 			}
 			List<Pair> test = map.get(filename);
 			for(int i = 0; i < test.size(); i++) {
